@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shaka DRM IPTV Test</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+  <style>
+    body { background: #111; color: white; font-family: sans-serif; padding: 20px; }
+    #video { width: 100%; max-width: 900px; height: 500px; background: black; }
+    select { margin-top: 20px; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Shaka DRM IPTV Test Player</h2>
+  <video id="video" controls autoplay></video>
+  <br>
+  <select id="channelSelector">
+    <option value="oneph">One PH (Clearkey)</option>
+    <option value="tv5">TV5 (Widevine)</option>
+  </select>
+
+  <script>
+    const channels = {
+      oneph: {
+        url: "https://qp-pldt-live-grp-04-prod.akamaized.net/out/u/oneph_sd.mpd",
+        drm: {
+          "clearKeys": {
+            "92834ab4a7e1499b90886c5d49220e46": "a7108d9a6cfcc1b7939eb111daf09ab3"
+          }
+        }
+      },
+      tv5: {
+        url: "https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd",
+        drm: {
+          "servers": {
+            "com.widevine.alpha": "http://143.44.136.74:9443/widevine/?deviceId=02:00:00:00:00:00"
+          }
+        }
+      }
+    };
+
+    async function initPlayer(channelKey) {
+      const video = document.getElementById('video');
+      const player = new shaka.Player(video);
+      shaka.polyfill.installAll();
+
+      try {
+        await player.load(channels[channelKey].url, 0, channels[channelKey].drm);
+        console.log(`Loaded channel: ${channelKey}`);
+      } catch (e) {
+        console.error("Error loading video", e);
+        alert("Failed to load stream: " + channelKey);
+      }
+    }
+
+    document.getElementById('channelSelector').addEventListener('change', e => {
+      initPlayer(e.target.value);
+    });
+
+    initPlayer('oneph'); // Load default channel
+  </script>
+</body>
+</html>
